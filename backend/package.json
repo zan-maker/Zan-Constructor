@@ -1,0 +1,19 @@
+{
+  "name": "estimator-mock-backend",
+  "version": "1.0.0",
+  "description": "Mock InsForge backend for landscaping estimator",
+  "type": "module",
+  "main": "mock-insforge.js",
+  "scripts": {
+    "start": "node mock-insforge.js",
+    "dev": "node --watch mock-insforge.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

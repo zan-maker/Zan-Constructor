@@ -1,0 +1,13 @@
+{
+  "build": {
+    "builder": "nixpacks",
+    "buildCommand": "cd frontend && npm install && npm run build",
+    "startCommand": "cd backend && npm start",
+    "outputDir": "frontend/dist"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "restartPolicyType": "ON_FAILURE",
+    "healthcheckPath": "/health"
+  }
+}
