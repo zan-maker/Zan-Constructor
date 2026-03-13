@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Estimator AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 40px; text-align: center; }
+        h1 { font-size: 2.8rem; margin-bottom: 10px; background: linear-gradient(45deg, #ff9a9e, #fad0c4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tagline { font-size: 1.2rem; opacity: 0.9; margin-bottom: 20px; }
+        .ai-badge { display: inline-block; background: linear-gradient(45deg, #ff9a9e, #fad0c4); color: #1e3c72; padding: 8px 20px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 40px; }
+        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
+        .estimator-form, .results { background: #f8f9fa; padding: 30px; border-radius: 15px; border: 2px solid #e9ecef; }
+        .results { overflow-y: auto; max-height: 600px; }
+        h2 { color: #1e3c72; margin-bottom: 25px; padding-bottom: 10px; border-bottom: 3px solid #667eea; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #495057; font-weight: 600; }
+        select, input { width: 100%; padding: 12px 15px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; }
+        select:focus, input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .dimensions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; width: 100%; margin-top: 10px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+        .btn:active { transform: translateY(0); }
+        .quick-estimate { background: #e7f5ff; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #339af0; }
+        .estimate-result { background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; }
+        .estimate-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .project-name { font-size: 1.4rem; color: #1e3c72; font-weight: 700; }
+        .total-estimate { font-size: 1.8rem; color: #2b8a3e; font-weight: 800; }
+        .details { margin-top: 15px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f3f5; }
+        .detail-label { color: #495057; }
+        .detail-value { color: #1e3c72; font-weight: 600; }
+        .ai-suggestions { background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #ffc107; }
+        .ai-title { color: #856404; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .ai-content { color: #856404; line-height: 1.6; }
+        .loading { text-align: center; padding: 40px; color: #495057; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        footer { text-align: center; padding: 30px; background: #f8f9fa; color: #6c757d; border-top: 1px solid #e9ecef; }
+        .powered-by { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏗️ Construction Estimator AI</h1>
+            <p class="tagline">AI-powered construction estimates with zero cloud costs</p>
+            <div class="ai-badge">🤖 Powered by Local AI (Ollama/LiteRT)</div>
+        </header>
+        
+        <div class="main-content">
+            <div class="estimator-form">
+                <h2>Create Your Estimate</h2>
+                
+                <div class="form-group">
+                    <label for="projectType">Project Type</label>
+                    <select id="projectType" onchange="updateDimensions()">
+                        <option value="deck">Deck Construction</option>
+                        <option value="drywall">Drywall Installation</option>
+                        <option value="bathroom">Bathroom Remodel</option>
+                        <option value="kitchen">Kitchen Renovation</option>
+                        <option value="roof">Roof Replacement</option>
+                    </select>
+                </div>
+                
+                <div id="dimensionsContainer">
+                    <!-- Dimensions will be dynamically added here -->
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerName">Customer Name (Optional)</label>
+                    <input type="text" id="customerName" placeholder="Enter customer name">
+                </div>
+                
+                <button class="btn" onclick="createEstimate()">
+                    🚀 Generate AI-Powered Estimate
+                </button>
+                
+                <div class="quick-estimate">
+                    <h3>Quick Estimate</h3>
+                    <p>Get a rough estimate instantly:</p>
+                    <div class="dimensions">
+                        <input type="text" id="quickSize" placeholder="e.g., 20x12" value="20x12">
+                        <button class="btn" onclick="quickEstimate()" style="background: #20c997;">
+                            ⚡ Quick Estimate
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="results">
+                <h2>Estimate Results</h2>
+                <div id="resultsContainer">
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Select a project and generate your first estimate!</p>
+                    </div>
+                    <div id="estimateResults"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Construction Estimator AI • Built with Local AI Inference</p>
+            <div class="powered-by">
+                <span>Powered by:</span>
+                <span style="color: #667eea;">Ollama</span>
+                <span>•</span>
+                <span style="color: #764ba2;">LiteRT</span>
+                <span>•</span>
+                <span style="color: #20c997;">OpenRAG</span>
+                <span>•</span>
+                <span style="color: #ff6b6b;">InsForge</span>
+            </div>
+            <p style="margin-top: 10px; font-size: 0.9rem;">Zero cloud costs • Data stays local • Always available</p>
+        </footer>
+    </div>
+
+    <script>
+        // Project configuration
+        const projectConfigs = {
+            deck: {
+                dimensions: [
+                    { id: 'length', label: 'Length (ft)', default: 20 },
+                    { id: 'width', label: 'Width (ft)', default: 12 }
+                ]
+            },
+            drywall: {
+                dimensions: [
+                    { id: 'length', label: 'Room Length (ft)', default: 12 },
+                    { id: 'width', label: 'Room Width (ft)', default: 12 },
+                    { id: 'height', label: 'Ceiling Height (ft)', default: 8 },
+                    { id: 'rooms', label: 'Number of Rooms', default: 1 }
+                ]
+            },
+            bathroom: {
+                dimensions: [
+                    { id: 'length', label: 'Length (ft)', default: 10 },
+                    { id: 'width', label: 'Width (ft)', default: 8 },
+                    { id: 'fixtures', label: 'Fixture Level', type: 'select', options: [
+                        { value: 'standard', label: 'Standard' },
+                        { value: 'premium', label: 'Premium' },
+                        { value: 'luxury', label: 'Luxury' }
+                    ]}
+                ]
+            },
+            kitchen: {
+                dimensions: [
+                    { id: 'length', label: 'Length (ft)', default: 12 },
+                    { id: 'width', label: 'Width (ft)', default: 10 },
+                    { id: 'cabinets', label: 'Cabinet Level', type: 'select', options: [
+                        { value: 'standard', label: 'Standard' },
+                        { value: 'custom', label: 'Custom' },
+                        { value: 'premium', label: 'Premium' }
+                    ]},
+                    { id: 'appliances', label: 'Appliance Level', type: 'select', options: [
+                        { value: 'basic', label: 'Basic' },
+                        { value: 'stainless', label: 'Stainless Steel' },
+                        { value: 'smart', label: 'Smart Appliances' }
+                    ]}
+                ]
+            },
+            roof: {
+                dimensions: [
+                    { id: 'area', label: 'Roof Area (sqft)', default: 1500 },
+                    { id: 'pitch', label: 'Roof Pitch', type: 'select', options: [
+                        { value: 'low', label: 'Low' },
+                        { value: 'medium', label: 'Medium' },
+                        { value: 'steep', label: 'Steep' }
+                    ]},
+                    { id: 'material', label: 'Roofing Material', type: 'select', options: [
+                        { value: 'asphalt', label: 'Asphalt Shingles' },
+                        { value: 'metal', label: 'Metal Roofing' },
+                        { value: 'tile', label: 'Clay Tile' }
+                    ]}
+                ]
+            }
+        };
+
+        // Initialize dimensions on page load
+        function updateDimensions() {
+            const projectType = document.getElementById('projectType').value;
+            const config = projectConfigs[projectType];
+            const container = document.getElementById('dimensionsContainer');
+            
+            container.innerHTML = '';
+            
+            config.dimensions.forEach(dim => {
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.textContent = dim.label;
+                label.htmlFor = dim.id;
+                
+                let input;
+                if (dim.type === 'select') {
+                    input = document.createElement('select');
+                    input.id = dim.id;
+                    dim.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt.value;
+                        option.textContent = opt.label;
+                        input.appendChild(option);
+                    });
+                } else {
+                    input = document.createElement('input');
+                    input.type = 'number';
+                    input.id = dim.id;
+                    input.placeholder = dim.label;
+                    input.value = dim.default || '';
+                    input.min = '1';
+                    input.step = '0.5';
+                }
+                
+                div.appendChild(label);
+                div.appendChild(input);
+                container.appendChild(div);
+            });
+        }
+
+        // Create detailed estimate
+        async function createEstimate() {
+            const projectType = document.getElementById('projectType').value;
+            const customerName = document.getElementById('customerName').value || 'Customer';
+            const config = projectConfigs[projectType];
+            
+            // Build dimensions object
+            const dimensions = {};
+            config.dimensions.forEach(dim => {
+                const element = document.getElementById(dim.id);
+                if (dim.type === 'select') {
+                    dimensions[dim.id] = element.value;
+                } else {
+                    dimensions[dim.id] = parseFloat(element.value) || dim.default;
+                }
+            });
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('estimateResults').innerHTML = '';
+            
+            try {
+                const response = await fetch('/estimate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        project_type: projectType,
+                        dimensions: dimensions,
+                        customer_name: customerName
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                // Display results
+                displayEstimateResults(data);
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('estimateResults').innerHTML = `
+                    <div class="estimate-result" style="border-color: #fa5252;">
+                        <div class="estimate-header">
+                            <div class="project-name">Error</div>
+                        </div>
+                        <div class="details">
+                            <p>Failed to generate estimate. Please try again.</p>
+                            <p style="color: #868e96; font-size: 0.9rem;">${error.message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Quick estimate
+        async function quickEstimate() {
+            const projectType = document.getElementById('projectType').value;
+            const quickSize = document.getElementById('quickSize').value;
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('estimateResults').innerHTML = '';
+            
+            try {
+                const response = await fetch(`/quick/${projectType}/${quickSize}`);
+                const data = await response.json();
+                
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                // Display quick estimate
+                document.getElementById('estimateResults').innerHTML = `
+                    <div class="estimate-result">
+                        <div class="estimate-header">
+                            <div class="project-name">${data.project} Quick Estimate</div>
+                            <div class="total-estimate">${data.quick_estimate}</div>
+                        </div>
+                        <div class="details">
+                            <div class="detail-row">
+                                <span class="detail-label">Size</span>
+                                <span class="detail-value">${data.size}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Note</span>
+                                <span class="detail-value">${data.note}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('estimateResults').innerHTML = `
+                    <div class="estimate-result" style="border-color: #fa5252;">
+                        <div class="estimate-header">
+                            <div class="project-name">Error</div>
+                        </div>
+                        <div class="details">
+                            <p>Failed to generate quick estimate. Please try again.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        
+// Display detailed estimate results
+function displayEstimateResults(data) {
+    const html = `
+        <div class="estimate-result">
+            <div class="estimate-header">
+                <div class="project-name">${data.project || 'Construction Estimate'}</div>
+                <div class="total-estimate">${data.total_estimate || 'N/A'}</div>
+            </div>
+            <div class="details">
+                <div class="detail-row">
+                    <span class="detail-label">Project</span>
+                    <span class="detail-value">${data.project || 'N/A'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Estimate</span>
+                    <span class="detail-value">${data.total_estimate || 'N/A'}</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('estimateResults').innerHTML = html;
+}
+
+updateDimensions();
+</script>
+</body>
+</html>
