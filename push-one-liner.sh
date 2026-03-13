@@ -1,0 +1,2 @@
+#!/bin/bash
+cd /home/node/.openclaw/workspace/estimator-tool && git add . && git commit -m "Deploy estimator-tool" && git remote remove origin 2>/dev/null && git remote add origin https://github.com/cubiczan1/Zander.git && git push -u origin master
