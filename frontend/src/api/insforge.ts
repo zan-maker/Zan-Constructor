@@ -1,7 +1,9 @@
 // InsForge API Integration for Landscaping Estimator
 import type { Estimate } from '../types/estimate';
 
-const INSFORGE_API = import.meta.env.VITE_INSFORGE_URL || 'http://localhost:7130';
+// Use relative URL in production (same domain), absolute in development
+const INSFORGE_API = import.meta.env.VITE_INSFORGE_URL || 
+  (import.meta.env.PROD ? '' : 'http://localhost:7130');
 const API_KEY = import.meta.env.VITE_INSFORGE_API_KEY;
 
 // Get auth token from localStorage
@@ -58,7 +60,7 @@ export const estimatesApi = {
   },
 
   // Create new estimate
-  async create(estimate: Omit<Estimate, 'id' | 'createdAt' | 'updatedAt'>): Promise<Estimate> {
+  async create(estimate: any): Promise<Estimate> {
     return apiRequest<Estimate>('/estimates', {
       method: 'POST',
       body: JSON.stringify(estimate),

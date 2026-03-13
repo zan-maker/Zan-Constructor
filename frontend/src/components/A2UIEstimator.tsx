@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { A2UIRenderer, useA2UIAgent, type A2UIMessage } from './A2UIIntegration';
+import { A2UIRenderer, useA2UIAgent } from './A2UIIntegration';
 import SimpleEstimateForm from './SimpleEstimateForm';
 
 // AI-powered estimator with A2UI integration
@@ -20,7 +20,7 @@ export default function A2UIEstimator() {
   ]);
   const [chatInput, setChatInput] = useState('');
 
-  const { messages, isLoading, generateForm, chat, clearMessages } =
+  const { messages, isLoading, generateForm, chat } =
     useA2UIAgent();
 
   // Initialize form generation when wizard mode is selected
@@ -43,7 +43,7 @@ export default function A2UIEstimator() {
           console.log('Applying pricing:', payload);
           break;
         case 'show_pricing':
-          chat('What are typical pricing rates?', formData);
+          chat('What are typical pricing rates?');
           break;
         case 'calculate_materials':
           generateForm(formData);
@@ -82,7 +82,7 @@ export default function A2UIEstimator() {
         { role: 'user', content: chatInput },
       ]);
 
-      await chat(chatInput, formData);
+      await chat(chatInput);
 
       setChatMessages((prev) => [
         ...prev,

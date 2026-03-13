@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import OpenRAGAssistant from './OpenRAGAssistant';
 import { useInsForge } from '../hooks/useInsForge';
-import type { Estimate } from '../types/estimate';
+import type { SimpleEstimate } from '../types/estimate';
 
 interface SimpleEstimateFormProps {
   onEstimateUpdate?: (estimate: any) => void;
@@ -159,7 +159,7 @@ const SimpleEstimateForm: React.FC<SimpleEstimateFormProps> = ({ onEstimateUpdat
   // Save estimate
   const handleSave = async () => {
     try {
-      const estimateData: Omit<Estimate, 'id' | 'createdAt' | 'updatedAt'> = {
+      const estimateData: Omit<SimpleEstimate, 'id' | 'createdAt' | 'updatedAt'> = {
         clientName: formData.clientName,
         projectName: formData.projectName,
         projectType: formData.projectType,

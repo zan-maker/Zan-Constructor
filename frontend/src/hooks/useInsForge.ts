@@ -5,8 +5,6 @@ import {
   aiApi, 
   authApi, 
   isAuthenticated, 
-  setAuthToken, 
-  clearAuthToken,
   initializeApi 
 } from '../api/insforge';
 import type { Estimate } from '../types/estimate';
@@ -75,7 +73,7 @@ export function useInsForge() {
   }, []);
 
   // Estimates
-  const saveEstimate = useCallback(async (estimate: Omit<Estimate, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const saveEstimate = useCallback(async (estimate: any) => {
     try {
       setIsLoading(true);
       setError(null);

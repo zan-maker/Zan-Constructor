@@ -77,3 +77,26 @@ export interface Estimate {
   createdAt: string;
   updatedAt: string;
 }
+
+// Simple estimate for the simplified form
+export interface SimpleEstimate {
+  id: string;
+  clientName: string;
+  projectName: string;
+  projectType: string;
+  location: string;
+  areaSqFt: number;
+  sodQuantity: number;
+  sodUnitCost: number;
+  prepHours: number;
+  prepHourlyRate: number;
+  equipmentRental: number;
+  markup: number;
+  contingency: number;
+  materialsTotal: number;
+  laborTotal: number;
+  subtotal: number;
+  finalTotal: number;
+  createdAt: string;
+  updatedAt: string;
+}

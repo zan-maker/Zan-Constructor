@@ -122,7 +122,7 @@ class EstimatorAIAgent {
     }
   }
 
-  async chat(message: string, context: any): Promise<A2UIMessage> {
+  async chat(message: string): Promise<A2UIMessage> {
     // Simple AI responses based on message content
     const lowerMessage = message.toLowerCase();
 
@@ -356,10 +356,10 @@ export function useA2UIAgent() {
   );
 
   const chat = useCallback(
-    async (message: string, context?: any) => {
+    async (message: string) => {
       setIsLoading(true);
       try {
-        const response = await agent.chat(message, context);
+        const response = await agent.chat(message);
         setMessages((prev) => [...prev, response]);
       } finally {
         setIsLoading(false);

@@ -1,236 +1,137 @@
-# Landscaping Estimator Tool - Deployment Guide
+# Railway Deployment Guide for Estimator Tool
 
-## 🚀 Quick Start
+## ✅ What's Ready
 
-### Option 1: Deploy to estimator.cubiczan.com (Recommended)
-1. **Build the app:**
-   ```bash
-   cd estimator-tool/frontend
-   npm run build
-   ```
+1. **Backend**: Node.js Express server (`backend/server.js`)
+   - Serves frontend static files from `frontend/dist/`
+   - API endpoints for estimates, documents, AI suggestions
+   - Health check endpoint at `/health`
+   - Railway-compatible (uses `PORT` environment variable)
 
-2. **Upload to your hosting:**
-   - Copy the `dist/` folder to your web server
-   - Point `estimator.cubiczan.com` DNS to this folder
+2. **Frontend**: Simple static build (`frontend/dist/`)
+   - Temporary landing page (will be replaced with full React app)
+   - Ready for deployment
 
-3. **Start OpenRAG backend (for AI features):**
-   ```bash
-   cd estimator-tool
-   ./setup-openrag.sh
-   # Follow the prompts to install container runtime
-   # Start OpenRAG:
-   cd openrag-env
-   uvx openrag serve
-   ```
+3. **Railway Configuration**: `railway.json`
+   - Builds frontend with simple script
+   - Starts backend server
+   - Health check configured
 
-### Option 2: Docker Deployment
+## 🚀 Deployment Steps
+
+### 1. Push to GitHub
+
 ```bash
-cd estimator-tool
-./deploy.sh
-# Follow the instructions to build and run with Docker
+cd ~/.openclaw/workspace/estimator-tool
+
+# Initialize git if not already done
+git init
+git add .
+git commit -m "Initial commit: Estimator Tool with Railway config"
+
+# Add remote (replace with your GitHub repo URL)
+git remote add origin https://github.com/cubiczan1/estimator-tool.git
+git branch -M main
+git push -u origin main
 ```
 
-### Option 3: Netlify (Free & Easy)
-1. Go to https://app.netlify.com/
-2. Drag and drop the `estimator-tool/frontend/dist` folder
-3. Set site name to `estimator-cubiczan`
-4. Add custom domain `estimator.cubiczan.com`
+### 2. Create Railway Project
+
+1. Go to [Railway.app](https://railway.app)
+2. Click "New Project" → "Deploy from GitHub repo"
+3. Select your `estimator-tool` repository
+4. Railway will automatically detect the `railway.json` configuration
+
+### 3. Configure Environment Variables
+
+In Railway dashboard, add these environment variables:
+
+```
+NODE_ENV=production
+PORT=3000
+```
+
+### 4. Add Custom Domain
+
+1. In Railway project settings, go to "Domains"
+2. Add custom domain: `estimator.cubiczan.com`
+3. Follow DNS configuration instructions
 
 ## 📁 Project Structure
 
 ```
 estimator-tool/
-├── frontend/                    # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── SimpleEstimateForm.tsx    # Main form
-│   │   │   └── OpenRAGAssistant.tsx      # AI assistant
-│   │   ├── types/estimate.ts            # TypeScript types
-│   │   └── App.tsx                      # Main app
-│   └── dist/                          # Built files
-├── openrag-data/                     # AI knowledge base
-│   └── knowledge-base/
-│       └── landscaping-pricing.md    # Industry pricing data
-├── deploy.sh                        # Deployment script
-└── DEPLOYMENT_GUIDE.md             # This file
+├── railway.json           # Railway configuration
+├── backend/
+│   ├── server.js         # Main server (serves frontend + API)
+│   ├── package.json      # Backend dependencies
+│   └── data/             # File-based storage
+├── frontend/
+│   ├── build-simple.js   # Simple build script
+│   ├── dist/             # Built frontend files
+│   ├── package.json      # Frontend dependencies
+│   └── src/              # React source code (to be built later)
+└── DEPLOYMENT_GUIDE.md   # This file
 ```
 
-## 🔧 Integration with cubiczan.com
+## 🔧 Development
 
-### Method A: Subdomain (Recommended)
-1. **Create subdomain:** `estimator.cubiczan.com`
-2. **Deploy standalone:** Follow Quick Start above
-3. **Link from main site:** Add button/link on cubiczan.com
+### Local Development
 
-### Method B: Embedded Page
-1. **Add to website builder:**
-   - Files are already added to `cubiczan-website-builder/frontend/src/pages/EstimatorPage.tsx`
-   - Access via "Open Landscaping Estimator" button
-
-2. **Run website builder:**
-   ```bash
-   cd cubiczan-website-builder/frontend
-   npm run dev
-   # Open http://localhost:5173
-   ```
-
-### Method C: Iframe Embed
-Add to any page on cubiczan.com:
-```html
-<iframe 
-  src="https://estimator.cubiczan.com" 
-  width="100%" 
-  height="800px"
-  style="border: none;"
-  title="Landscaping Estimator"
-></iframe>
-```
-
-## 🧠 AI Backend (OpenRAG)
-
-### Installation
 ```bash
-cd estimator-tool
-./setup-openrag.sh
-# Choose Podman (option 1) or Docker (option 2)
-# Complete the setup wizard
+# Start backend
+cd backend
+npm install
+npm run dev
+
+# Build frontend (temporary)
+cd frontend
+npm run build
+
+# Access at http://localhost:7130
 ```
 
-### Configuration
-- **Port:** 3000 (http://localhost:3000)
-- **Knowledge base:** `openrag-data/knowledge-base/`
-- **Industries:** landscaping, plumbing, hvac, electrical
+### API Endpoints
 
-### Start/Stop
-```bash
-# Start
-cd openrag-env
-uvx openrag serve
+- `GET /health` - Health check
+- `GET /estimates` - List all estimates
+- `POST /estimates` - Create new estimate
+- `GET /estimates/:id` - Get single estimate
+- `POST /ai/suggest-pricing` - AI pricing suggestions
+- `POST /ai/chat` - AI chat assistance
 
-# Stop
-Ctrl+C
-```
+## 🔄 Next Steps
 
-## 📊 Database & Storage
+1. **Complete React Build**: Fix Vite/TypeScript issues to build full React app
+2. **Database Integration**: Add PostgreSQL/SQLite for persistent storage
+3. **Authentication**: Implement real JWT authentication
+4. **Email Integration**: Add Brevo/SendGrid for notifications
+5. **Payment Processing**: Add Stripe for paid features
 
-### Estimates Storage
-The app currently uses browser localStorage. For production:
+## 🆘 Troubleshooting
 
-1. **Add backend API** (Node.js/Express):
-   ```javascript
-   // Example endpoint
-   POST /api/estimates
-   GET /api/estimates/:id
-   ```
+### Build Issues
+If the React build fails, the simple build script (`build-simple.js`) creates a temporary static page.
 
-2. **Database options:**
-   - PostgreSQL (recommended)
-   - MongoDB
-   - SQLite (simple)
+### Port Issues
+Railway sets the `PORT` environment variable. The server automatically uses it.
 
-3. **File uploads:**
-   - Store in `uploads/` directory
-   - Use Cloudinary/S3 for production
+### Health Check Fails
+Check that:
+- Backend is running
+- `/health` endpoint returns 200 OK
+- Environment variables are set correctly
 
-## 🔒 Security & Environment Variables
+## 📞 Support
 
-### Required Variables
-Create `.env` file in `frontend/`:
-```env
-VITE_API_URL=https://api.cubiczan.com
-VITE_OPENRAG_URL=http://localhost:3000
-VITE_GOOGLE_MAPS_API_KEY=your_key_here
-```
-
-### Security Best Practices
-1. **HTTPS:** Always use HTTPS in production
-2. **CORS:** Configure CORS for your domain
-3. **Rate limiting:** Implement on API endpoints
-4. **Input validation:** Sanitize all user inputs
-5. **File upload limits:** Restrict file types and sizes
-
-## 📈 Monitoring & Analytics
-
-### Basic Setup
-1. **Google Analytics:**
-   ```html
-   <!-- Add to index.html -->
-   <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
-   ```
-
-2. **Error tracking:**
-   - Sentry.io (free tier available)
-   - LogRocket
-
-3. **Performance monitoring:**
-   - Lighthouse audits
-   - Web Vitals tracking
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-1. **OpenRAG won't start:**
-   ```bash
-   # Check container runtime
-   docker --version
-   podman --version
-   
-   # Reinstall OpenRAG
-   uvx openrag --tui
-   ```
-
-2. **Build errors:**
-   ```bash
-   # Clear node_modules and reinstall
-   rm -rf node_modules package-lock.json
-   npm install
-   npm run build
-   ```
-
-3. **CORS errors:**
-   - Ensure OpenRAG is running on port 3000
-   - Check browser console for errors
-   - Configure CORS in OpenRAG settings
-
-4. **Form not saving:**
-   - Check browser localStorage
-   - Verify form validation
-   - Check console for JavaScript errors
-
-### Support
-- **Documentation:** Check this guide first
-- **GitHub Issues:** Create issue with error details
-- **Community:** Discord #claw18 channel
-
-## 🎯 Success Metrics
-
-### Deployment Checklist
-- [ ] Frontend builds without errors
-- [ ] OpenRAG backend starts successfully
-- [ ] Form calculations work correctly
-- [ ] AI suggestions appear
-- [ ] Document upload works
-- [ ] Mobile responsive
-- [ ] HTTPS enabled
-- [ ] Analytics configured
-- [ ] Error tracking setup
-
-### Performance Targets
-- **Load time:** < 3 seconds
-- **Form response:** < 100ms
-- **AI queries:** < 2 seconds
-- **Uptime:** 99.9%
-
-## 📞 Contact & Support
-
-For deployment assistance:
-- **Discord:** @cubiczan1 in #claw18
-- **Email:** [your email]
-- **Documentation:** https://docs.cubiczan.com/estimator
+For issues:
+1. Check Railway logs in dashboard
+2. Verify environment variables
+3. Test locally with `npm run dev`
 
 ---
 
-**Last Updated:** 2026-03-13  
-**Version:** 1.0.0  
-**Status:** Production Ready 🚀
+**Deployment Status**: ✅ Ready for Railway deployment  
+**Custom Domain**: `estimator.cubiczan.com`  
+**Backend Port**: Uses Railway's `PORT` environment variable  
+**Health Check**: `/health` endpoint configured
